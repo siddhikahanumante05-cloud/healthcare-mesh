@@ -1,0 +1,76 @@
+.tab-btn {
+  padding: 6px 12px;
+  border-radius: 8px 8px 0 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #64748b;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+}
+.tab-btn.active {
+  color: #0f172a;
+  border-bottom: 2px solid #0f172a;
+  background: #f8fafc;
+}
+.filter-btn {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+}
+.filter-btn.active {
+  background: #0f172a;
+  color: white;
+  border-color: #0f172a;
+}
+.inp {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.875rem;
+}
+.inp:focus {
+  outline: none;
+  border-color: #0f172a;
+  box-shadow: 0 0 0 2px rgba(15,23,42,0.1);
+}
+.btn-primary {
+  background: #0f172a;
+  color: white;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.btn-primary:hover { background: #1e293b; }
+.btn-sm {
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+.card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px;
+}
+.score-bar-bg {
+  background: #e2e8f0;
+  border-radius: 999px;
+  height: 6px;
+  overflow: hidden;
+}
+.score-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg,#f59e0b,#ef4444);
+}

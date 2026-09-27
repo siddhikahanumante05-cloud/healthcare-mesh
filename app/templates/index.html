@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trust-Scored Emergency Mesh — Clinic Coordination</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="/static/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🩺</text></svg>">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+<header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div>
+      <h1 class="text-lg font-bold text-slate-900">🩺 Trust-Scored Emergency Mesh</h1>
+      <p class="text-xs text-slate-500">Clinic coordination · appointments · ambulance · blood availability</p>
+    </div>
+    <div class="text-xs text-slate-400" id="clock"></div>
+  </div>
+  <nav class="max-w-6xl mx-auto px-4 flex gap-1 overflow-x-auto pb-2" id="tabs">
+    <button data-tab="dashboard" class="tab-btn active">📊 Dashboard</button>
+    <button data-tab="patients" class="tab-btn">👤 Patients</button>
+    <button data-tab="appointments" class="tab-btn">📅 Appointments</button>
+    <button data-tab="ambulance" class="tab-btn">🚑 Emergency Mesh</button>
+    <button data-tab="blood" class="tab-btn">🩸 Blood Availability</button>
+    <button data-tab="facilities" class="tab-btn">🏥 Facilities</button>
+  </nav>
+</header>
+
+<main class="max-w-6xl mx-auto px-4 py-6">
+
+  <!-- DASHBOARD -->
+  <section id="tab-dashboard" class="tab-panel">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6" id="stat-cards"></div>
+    <div class="bg-white rounded-xl border border-slate-200 p-4">
+      <h2 class="font-semibold mb-3">🔔 Follow-up Reminders — next 24 hrs</h2>
+      <div id="reminders-list" class="space-y-2 text-sm"></div>
+    </div>
+  </section>
+
+  <!-- PATIENTS -->
+  <section id="tab-patients" class="tab-panel hidden">
+    <div class="grid md:grid-cols-3 gap-4">
+      <div class="bg-white rounded-xl border border-slate-200 p-4 md:col-span-1">
+        <h2 class="font-semibold mb-3">Register Patient</h2>
+        <form id="patient-form" class="space-y-2">
+          <input required name="name" placeholder="Full name" class="inp">
+          <div class="flex gap-2">
+            <input name="age" type="number" placeholder="Age" class="inp w-1/2">
+            <select name="gender" class="inp w-1/2">
+              <option value="">Gender</option>
+              <option>M</option><option>F</option><option>Other</option>
+            </select>
+          </div>
+          <input required name="phone" placeholder="Phone" class="inp">
+          <select name="blood_group" class="inp">
+            <option value="">Blood group (optional)</option>
+            <option>O+</option><option>O-</option><option>A+</option><option>A-</option>
+            <option>B+</option><option>B-</option><option>AB+</option><option>AB-</option>
+          </select>
+          <textarea name="notes" placeholder="Notes (non-clinical, free text)" class="inp" rows="2"></textarea>
+          <button class="btn-primary w-full">Register</button>
+        </form>
+      </div>
+      <div class="md:col-span-2">
+        <div class="flex gap-2 mb-3">
+          <input id="patient-search" placeholder="🔎 Search by name or phone" class="inp flex-1">
+        </div>
+        <div id="patients-list" class="space-y-2"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- APPOINTMENTS -->
+  <section id="tab-appointments" class="tab-panel hidden">
+    <div class="grid md:grid-cols-3 gap-4">
+      <div class="bg-white rounded-xl border border-slate-200 p-4 md:col-span-1">
+        <h2 class="font-semibold mb-3">Book Appointment</h2>
+        <form id="appointment-form" class="space-y-2">
+          <select required name="patient_id" id="appt-patient-select" class="inp"></select>
+          <input required name="doctor_name" placeholder="Doctor name" class="inp">
+          <input required name="scheduled_at" type="datetime-local" class="inp">
+          <textarea name="reason" placeholder="Reason for visit" class="inp" rows="2"></textarea>
+          <button class="btn-primary w-full">Book</button>
+        </form>
+      </div>
+      <div class="md:col-span-2">
+        <div class="flex gap-2 mb-3 flex-wrap" id="appt-filters">
+          <button data-status="" class="filter-btn active">All</button>
+          <button data-status="scheduled" class="filter-btn">Scheduled</button>
+          <button data-status="completed" class="filter-btn">Completed</button>
+          <button data-status="no-show" class="filter-btn">No-show</button>
+          <button data-status="cancelled" class="filter-btn">Cancelled</button>
+        </div>
+        <div id="appointments-list" class="space-y-2"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AMBULANCE / EMERGENCY MESH -->
+  <section id="tab-ambulance" class="tab-panel hidden">
+    <div class="bg-amber-50 border border-amber-200 text-amber-900 text-sm rounded-lg p-3 mb-4">
+      <strong>How ranking works:</strong> requests are ordered by a live <em>Urgency-Distance Score</em> —
+      minutes waited + proximity to the nearest available ambulance + requester trust score.
+      This is logistics prioritization only; the system never assesses medical severity.
+    </div>
+    <div class="grid md:grid-cols-3 gap-4">
+      <div class="bg-white rounded-xl border border-slate-200 p-4 md:col-span-1">
+        <h2 class="font-semibold mb-3">🚨 New Ambulance Request</h2>
+        <form id="ambulance-form" class="space-y-2">
+          <input required name="patient_name" placeholder="Patient name" class="inp">
+          <input required name="contact_phone" placeholder="Contact phone" class="inp">
+          <input required name="pickup_address" placeholder="Pickup address" class="inp">
+          <div class="flex gap-2">
+            <input required name="lat" type="number" step="any" placeholder="Latitude" class="inp w-1/2">
+            <input required name="lng" type="number" step="any" placeholder="Longitude" class="inp w-1/2">
+          </div>
+          <button type="button" id="use-demo-loc" class="text-xs text-blue-600 underline">use a sample Pune location</button>
+          <button class="btn-primary w-full">Submit Request</button>
+        </form>
+
+        <h2 class="font-semibold mt-6 mb-3">🚑 Ambulance Fleet</h2>
+        <div id="ambulance-fleet" class="space-y-2 text-sm"></div>
+      </div>
+      <div class="md:col-span-2">
+        <h2 class="font-semibold mb-3">Live Emergency Queue</h2>
+        <div id="ambulance-queue" class="space-y-3"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BLOOD -->
+  <section id="tab-blood" class="tab-panel hidden">
+    <div class="bg-rose-50 border border-rose-200 text-rose-900 text-sm rounded-lg p-3 mb-4">
+      <strong>Availability Decay:</strong> reported stock auto-expires 6 hours after report unless a
+      facility re-confirms it — so search results never show stale "yes we have it" data.
+    </div>
+    <div class="grid md:grid-cols-3 gap-4">
+      <div class="bg-white rounded-xl border border-slate-200 p-4 md:col-span-1">
+        <h2 class="font-semibold mb-3">Report Blood Availability</h2>
+        <form id="blood-report-form" class="space-y-2">
+          <input required name="facility_name" placeholder="Facility name" class="inp">
+          <select required name="blood_group" class="inp">
+            <option value="">Blood group</option>
+            <option>O+</option><option>O-</option><option>A+</option><option>A-</option>
+            <option>B+</option><option>B-</option><option>AB+</option><option>AB-</option>
+          </select>
+          <input required name="units" type="number" placeholder="Units available" class="inp">
+          <input required name="location_text" placeholder="Location (area, city)" class="inp">
+          <input name="contact_phone" placeholder="Contact phone" class="inp">
+          <button class="btn-primary w-full">Report</button>
+        </form>
+      </div>
+      <div class="md:col-span-2">
+        <div class="flex gap-2 mb-3">
+          <select id="blood-filter-group" class="inp">
+            <option value="">Any blood group</option>
+            <option>O+</option><option>O-</option><option>A+</option><option>A-</option>
+            <option>B+</option><option>B-</option><option>AB+</option><option>AB-</option>
+          </select>
+          <input id="blood-filter-location" placeholder="Filter by location" class="inp flex-1">
+        </div>
+        <div id="blood-list" class="space-y-2"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FACILITIES -->
+  <section id="tab-facilities" class="tab-panel hidden">
+    <h2 class="font-semibold mb-3">🏥 Nearby Hospitals, Clinics & Blood Banks</h2>
+    <div id="facilities-list" class="grid md:grid-cols-2 gap-3"></div>
+  </section>
+
+</main>
+
+<div id="toast" class="fixed bottom-4 right-4 hidden"></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
